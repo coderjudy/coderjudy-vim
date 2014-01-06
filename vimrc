@@ -419,3 +419,4 @@ let g:vimrc_email='coderjson@163.com'
 let g:vimrc_homepage='sss' 
 nmap <leader>ai :AuthorInfoDetect<cr>
 "添加注释信息插件 配置结束
+"
