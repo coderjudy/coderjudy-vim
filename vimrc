@@ -33,6 +33,12 @@ Bundle 'tpope/vim-surround'
 Bundle 'pangloss/vim-javascript'
 "标签插件 快速定位插件
 Bundle 'vim-scripts/Visual-Mark'
+"taglist 查看代码结构
+Bundle 'vim-scripts/taglist.vim'
+"窗口控制器
+Bundle 'vim-scripts/winmanager'
+"bufexplorer 管理
+Bundle 'vim-scripts/bufexplorer.zip'
 "Bundle 'drmingdrmer/xptemplate'
 "Bundle 'msanders/snipmate.vim'
 "
@@ -62,17 +68,21 @@ filetype plugin indent on " 开启插件
 syntax on " 自动语法高亮
 let mapleader = ","
 colorscheme darkblue "设定配色方案
+"set cuc " 设置标尺来显示代码对齐
+"set cul " 高亮光标所在行
 set number " 显示行号
 set cursorline " 突出显示当前行
 set ruler " 打开状态栏标尺
-set autoindent
+set autoindent "自动缩进
+set autoread " 设置当文件被改动时自动载入
+"set paste "保持原格式粘贴
 set shiftwidth=4 " 设定 << 和 >> 命令移动时的宽度为 4
 set softtabstop=4 " 使得按退格键时可以一次删掉 4 个空格
 set tabstop=4 " 设定 tab 长度为 4
 set expandtab
 set nobackup " 覆盖文件时不备份
-set tags=tags; " tags 插件
-set autochdir " 自动切换当前目录为当前文件所在的目录
+set tags=tags " tags 插件
+set autochdir " 改变vim tgas 的当前目录
 set backupcopy=yes " 设置备份时的行为为覆盖
 set ignorecase smartcase " 搜索时忽略大小写，但在有一个或以上大写字母时仍保持对大小写敏感
 "set nowrapscan " 禁止在搜索到文件两端时重新搜索
@@ -98,42 +108,22 @@ set foldenable " 开始折叠
 set foldmethod=syntax " 设置语法折叠
 set foldcolumn=0 " 设置折叠区域的宽度
 setlocal foldlevel=1 " 设置折叠层数为
-set foldclose=all " 设置为自动关闭折叠 
+"set foldclose=all " 设置为自动关闭折叠 
 "nnoremap <space> @=((foldclosed(line('.')) < 0) ? 'zc' : 'zo')<CR> " 用空格键来开关折叠
+"
+"WMToggle 设置开始
 let Tlist_Show_One_File=1
 let Tlist_Exit_OnlyWindow=1
 let g:winManagerWindowLayout='FileExplorer|TagList'
 nmap wm :WMToggle<cr>
-
-let g:vimrc_author='zhujianjun' 
-let g:vimrc_email='coderjson@163.com' 
-nmap <F4> :AuthorInfoDetect<cr>
-
-" return OS type, eg: windows, or linux, mac, et.st..
-function! MySys()
-if has("win16") || has("win32") || has("win64") || has("win95")
-return "windows"
-elseif has("unix")
-return "linux"
-endif
-endfunction
-
-" 用户目录变量$VIMFILES
-if MySys() == "windows"
-let $VIMFILES = $VIM.'/vimfiles'
-elseif MySys() == "linux"
-let $VIMFILES = $HOME.'/.vim'
-endif
-
-" 设定doc文档目录
-let helptags=$VIMFILES.'/doc'
-
+"WMToggle 设置结束
+"
 " 设置字体 以及中文支持
 if has("win32")
 set guifont=Bitstream_Vera_Sans_Mono:h10:cANSI
 set gfw=幼圆:h10.5:cGB2312
 endif
-
+"
 " 配置多语言环境
 if has("multi_byte")
 " UTF-8 编码
@@ -141,11 +131,11 @@ set encoding=utf-8
 set termencoding=utf-8
 set formatoptions+=mM
 set fencs=utf-8,gbk
-
+"
 if v:lang =~? '^\(zh\)\|\(ja\)\|\(ko\)'
 set ambiwidth=double
 endif
-
+"
 if has("win32")
 source $VIMRUNTIME/delmenu.vim
 source $VIMRUNTIME/menu.vim
@@ -154,11 +144,11 @@ endif
 else
 echoerr "Sorry, this version of (g)vim was not compiled with +multi_byte"
 endif
-
+"
 if has("win32")
     au GUIEnter * simalt ~x
 endif
-
+"
 " 中文帮助
 set helplang=cn
 
@@ -167,6 +157,11 @@ set helplang=cn
 " 代码折叠
 set foldmethod=indent
 
+" 高亮显示当前行配置开始
+hi CursorLine   cterm=NONE ctermbg=darkred ctermfg=white guibg=darkred guifg=white
+hi CursorColumn cterm=NONE ctermbg=darkred ctermfg=white guibg=darkred guifg=white
+" 高亮显示当前行配置结束
+"
 " 关闭VIM的时候保存会话，按F7读取会话
 set sessionoptions=buffers,sesdir,help,tabpages,winsize
 au VimLeave * mks! ~/Session.vim
@@ -218,7 +213,7 @@ nnoremap <S-F5> :set filetype=python<return>
 "去除文件中^M这个符号
 nnoremap <S-F6> :e ++ff=dos<return>
 "去除搜索高亮显示
-nmap <F2> :noh<return>
+nmap <Leader>1 :noh<return>
 
 "Tagbar 函数列表插件
 "nmap <S-F8> :TagbarToggle<cr>
@@ -273,7 +268,7 @@ let javascript_enable_domhtmlcss=1
 "imap <silent> <C-e> <Plug>(neocomplcache_snippets_expand)
 "smap <silent> <C-e> <Plug>(neocomplcache_snippets_expand)
 
-nnoremap ,a :call SetComment()<return>
+nnoremap <leader>2 :call SetComment()<return>
 "/* 加入注释 */
  func SetComment()
      call setline(1,"/*================================") 
@@ -282,15 +277,15 @@ nnoremap ,a :call SetComment()<return>
      call append(line(".")+2, "*   FileName:".expand("%:t")) 
      call append(line(".")+3, "*   Author:zhujianjun")
      call append(line(".")+4, "*   Crate Time:".strftime("%Y-%m-%d %H:%M")) 
-     call append(line(".")+5, "*Last modified:".strftime("%Y-%m-%d %H:%M")) 
+     call append(line(".")+5, "*   Last modified:".strftime("%Y-%m-%d %H:%M")) 
      call append(line(".")+6, "*   Description:") 
      call append(line(".")+7, "*")
      call append(line(".")+8, "=================================*/") 
  endfunc
 "
 "CtrlP插件	查找并打开文件
-nnoremap ,1 :CtrlP<return>
-nnoremap ,2 :CtrlPMRU<return>
+nnoremap <leader>tp :CtrlP<return>
+nnoremap <Leader>tm :CtrlPMRU<return>
 "使用方式	ctrl+t	新窗口打开查找的文件
 "
 "neocomplcache  代码补全插件配置开始
@@ -405,8 +400,8 @@ nmap <leader>sc :SessionClose<CR>
 "indentline 缩进标识 配置开始 
 let g:indentLine_enabled = 0
 let g:indentLine_color_term = 239
-let g:indentLine_color_gui = '#A4E57E'
-nnoremap <leader>ig :IndentLinesToggle<CR>:set list! lcs=tab:\\|\<Space><CR>
+"let g:indentLine_color_gui = '#A4E57E'
+"nnoremap <leader>ig :IndentLinesToggle<CR>:set list! lcs=tab:\\|\<Space><CR>
 "indentline 缩进标识 配置结束 
 "
 "vim-powerline 配置开始
@@ -416,7 +411,18 @@ nnoremap <leader>ig :IndentLinesToggle<CR>:set list! lcs=tab:\\|\<Space><CR>
 "添加注释信息插件 配置开始
 let g:vimrc_author='coderjudy' 
 let g:vimrc_email='coderjson@163.com' 
-let g:vimrc_homepage='sss' 
+let g:vimrc_homepage='' 
 nmap <leader>ai :AuthorInfoDetect<cr>
 "添加注释信息插件 配置结束
+"
+"bufexplorer 配置开始
+let g:bufExplorerDefaultHelp=0       " Do not show default help.
+let g:bufExplorerShowRelativePath=1  " Show relative paths.
+let g:bufExplorerSortBy='mru'        " Sort by most recently used.
+let g:bufExplorerSplitRight=0        " Split left.
+let g:bufExplorerSplitVertical=1     " Split vertically.
+let g:bufExplorerSplitVertSize = 30  " Split width
+let g:bufExplorerUseCurrentWindow=1  " Open in new window.
+autocmd BufWinEnter \[Buf\ List\] setl nonumber
+"bufexplorer 配置结束
 "
